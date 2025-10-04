@@ -1,0 +1,1 @@
+CREATE INDEX idx_password_resets_expired_at ON password_resets(expired_at);

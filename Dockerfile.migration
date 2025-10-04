@@ -1,0 +1,12 @@
+FROM migrate/migrate
+
+# Install PostgreSQL client
+RUN apk add --no-cache postgresql-client
+
+# Copy migration scripts to the container
+COPY ./db/migrations /migrations
+
+# Set working directory
+WORKDIR /migrations
+
+RUN chmod 644 /migrations/*sql

@@ -1,0 +1,81 @@
+services:
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    env_file:
+      - .env
+    networks:
+      - auth-service-networks
+    depends_on:
+      migration: 
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile.migration
+    environment:
+      - DB_HOST=postgres  # Use service name
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SSL_MODE=${DB_SSL_MODE}
+    entrypoint: ["/bin/sh"]
+    command: >
+      -c "
+      echo 'Waiting for PostgreSQL...' &&
+      until pg_isready -h $$DB_HOST -p $$DB_PORT -U $$DB_USER -d $$DB_NAME;
+      do sleep 2; done &&
+      echo 'PostgreSQL is ready. Running migrations...' &&
+      migrate -path /migrations -database "postgresql://$$DB_USER:$$DB_PASSWORD@$$DB_HOST:$$DB_PORT/$$DB_NAME?sslmode=$$DB_SSL_MODE" up
+      "   
+    networks:
+      - auth-service-networks
+    depends_on:
+      postgres:
+       condition: service_healthy
+    restart: on-failure
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    networks:
+      - auth-service-networks
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pgadmin: 
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80"
+    networks:
+      - auth-service-networks
+    depends_on:
+      postgres :
+        condition: service_healthy
+
+networks:
+  auth-service-networks:
+    driver: bridge
+
+volumes:
+  postgres-data:

@@ -12,7 +12,7 @@ import (
 	"github.com/Nucleussss/hikayat-forum/auth/internal/repository/postgres"
 	"github.com/Nucleussss/hikayat-forum/auth/internal/service"
 
-	pb "github.com/Nucleussss/hikayat-forum/auth/api/auth/v1"
+	authpb "github.com/Nucleussss/hikayat-proto/gen/go/auth/v1"
 )
 
 func main() {
@@ -39,22 +39,22 @@ func main() {
 	userRepo := postgres.NewUserRepository(dbConn)
 
 	// initiate service layer
-	authServie := service.NewAuthService(userRepo)
+	authService := service.NewAuthService(userRepo)
 
 	// initiate auth handler
-	authHandler := grpc.NewAuthHandler(authServie)
+	authHandler := grpc.NewAuthHandler(authService)
 
 	grpcServer := grpc.NewServer()
 
 	// register gRPC server with reflection for easy discovery and access
-	pb.RegisterAuthServiceServer(grpcServer, authHandler)
+	authpb.RegisterAuthServiceServer(grpcServer, authHandler)
 
 	// start gRPC server on the specified port
-	lis, err := net.Listen("tcp", ":"+os.Getenv("GRPC_PORT"))
+	lis, err := net.Listen("tcp", ":"+os.Getenv("AUTH_GRPC_PORT"))
 	if err != nil {
-		log.Fatalf("failed to listen on port %s : %v", os.Getenv("GRPC_PORT"), err)
+		log.Fatalf("failed to listen on port %s : %v", os.Getenv("AUTH_GRPC_PORT"), err)
 	}
-	log.Printf("Starting gRPC server at %s\n", os.Getenv("GRPC_PORT"))
+	log.Printf("Starting gRPC server at %s\n", os.Getenv("AUTH_GRPC_PORT"))
 
 	// gracefull shutdown setup
 	sigChan := make(chan os.Signal, 1)
@@ -84,5 +84,4 @@ func main() {
 	// wait for server goroutine to finish
 	<-grpcStopped
 	log.Println("Auth Service Exited")
-
 }

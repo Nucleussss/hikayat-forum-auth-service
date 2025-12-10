@@ -29,7 +29,7 @@ func InitDB(dbString string) (*sql.DB, error) {
 			continue
 		}
 
-		// check if the connection is valid by pinging the
+		// check if the connection is valid by pinging the database
 		if err = db.Ping(); err != nil {
 			log.Printf("%s Failed to ping database (attemp %d): %v", op, i+1, err)
 

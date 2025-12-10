@@ -3,18 +3,17 @@ package repository
 import (
 	"context"
 
-	"github.com/Nucleussss/hikayat-forum/auth/internal/models"
-	"github.com/google/uuid"
+	authpb "github.com/Nucleussss/hikayat-proto/gen/go/auth/v1"
 )
 
 type UserRepository interface {
-	FindUserByEmail(ctx context.Context, email string) (*models.User, error)
-	FindUserById(ctx context.Context, id string) (*models.User, error)
-	CreateNewUser(ctx context.Context, user *models.RegisterRequest) error
+	FindUserByEmail(ctx context.Context, email string) (*authpb.User, error)
+	FindUserById(ctx context.Context, id string) (*authpb.User, error)
+	CreateNewUser(ctx context.Context, req *authpb.RegisterRequest) error
 	ExistByEmail(ctx context.Context, email string) (bool, error)
-	UpdateUserProfile(ctx context.Context, user *models.UpdateUserProfileRequest) (*models.UpdateUserProfileResponse, error)
-	ChangeUserPassword(ctx context.Context, user *models.ChangeUserPasswordRequest) error
-	ChangeUserEmail(ctx context.Context, user *models.ChangeUserEmailRequest) error
-	DeleteUser(ctx context.Context, user *models.DeleteUserRequest) error
-	GetUserPasswordHash(ctx context.Context, id uuid.UUID) (string, error)
+	UpdateUserProfile(ctx context.Context, req *authpb.UpdateUserProfileRequest) (*authpb.UpdateUserProfileResponse, error)
+	ChangeUserPassword(ctx context.Context, req *authpb.ChangeUserPasswordRequest) error
+	ChangeUserEmail(ctx context.Context, req *authpb.ChangeUserEmailRequest) error
+	DeleteUser(ctx context.Context, user *authpb.DeleteUserRequest) error
+	GetUserPasswordHash(ctx context.Context, identifier interface{}) (string, error)
 }

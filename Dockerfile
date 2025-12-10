@@ -16,7 +16,7 @@ COPY . .
 # build the application
 RUN CGO_ENABLE=0 GOOS=linux go build -o /app/auth-service cmd/auth-service/main.go
 
-FROM alpine:latest 
+FROM alpine:3.22 
 
 # install dependencies
 RUN apk --no-cache add \
@@ -29,7 +29,6 @@ RUN chmod +x /app/auth-service
 
 # set working directory
 WORKDIR /app
-
 # expose port
 EXPOSE 8080
 

@@ -33,13 +33,10 @@ func GenerateJWTToken(userId uuid.UUID, secretKey string) (string, error) {
 
 func ValidateJWTToken(tokenString string, secretKey string) (*jwt.MapClaims, error) {
 	// parse the token using the secret key
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-		// check if the signing method is HMAC
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
-
-		// return the secret key as the token's key
 		return []byte(secretKey), nil
 	})
 
@@ -56,11 +53,10 @@ func ValidateJWTToken(tokenString string, secretKey string) (*jwt.MapClaims, err
 	}
 
 	// check if the token is valid and has not expired
-	claims, ok := token.Claims.(*jwt.MapClaims)
-	if !ok {
-		log.Println("JWT claims are not of type *jwt.MapClaims")
-		return nil, jwt.ErrInvalidKey
+	// Safe to assert as *jwt.MapClaims
+	if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+		return claims, nil
 	}
 
-	return claims, nil
+	return nil, fmt.Errorf("invalid claims type")
 }

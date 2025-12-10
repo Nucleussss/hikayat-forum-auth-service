@@ -53,7 +53,7 @@ func AuthInterceptor(jwtSecret string) grpc.UnaryServerInterceptor {
 		// Extract the JWT token by removing the "Bearer " prefix.
 		token := strings.TrimPrefix(authHeader[0], "Bearer ")
 		// Validate the JWT token using the provided secret key.
-		mapClaims, err := utils.ValidateJWTToken(token, os.Getenv("SECRET_KEY"))
+		mapClaims, err := utils.ValidateJWTToken(token, os.Getenv("JWT_SECRET"))
 		if err != nil {
 			log.Printf("%s: %v", op, err)
 			return nil, status.Errorf(codes.Unauthenticated, "invalid token")

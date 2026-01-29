@@ -16,7 +16,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-//go:embed../../../db/migrations/*.sql
 var migrationsFS embed.FS
 
 func setupTestDB(t *testing.T) (*sql.DB, func()) {
